@@ -1,0 +1,15 @@
+# OS and IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Temp / extracted archives (content lives in docs/)
+docx-temp/
+*.zip
+drive-download-*/
+
+# Optional: uncomment if you add Node/Next.js later
+# node_modules/
+# .next/
+# .env*.local
