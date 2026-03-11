@@ -9,6 +9,14 @@ docx-temp/
 *.zip
 drive-download-*/
 
+# Environment variables (never commit secrets)
+.env
+
+# Node / Vite build artifacts
+node_modules/
+dist/
+.firebase/
+
 # Optional: uncomment if you add Node/Next.js later
 # node_modules/
 # .next/
