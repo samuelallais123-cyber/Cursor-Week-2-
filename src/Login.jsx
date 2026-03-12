@@ -15,6 +15,7 @@ function Login() {
   const [user, setUser] = useState(null);
   const [testText, setTestText] = useState('');
   const [saveStatus, setSaveStatus] = useState({ text: '', isError: false });
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -142,10 +143,16 @@ function Login() {
 
   return (
     <div style={styles.card}>
-      <h1 style={styles.title}>FieldPorter</h1>
-      <p style={styles.subtitle}>Sign in or create an account</p>
+      <h1 style={styles.title}>
+        {isSignUpMode ? 'Create your FieldPorter account' : 'Sign in to FieldPorter'}
+      </h1>
+      <p style={styles.subtitle}>
+        {isSignUpMode
+          ? 'Register to start using FieldPorter.'
+          : 'Welcome back. Please sign in to continue.'}
+      </p>
 
-      <form onSubmit={handleLogin} style={styles.form}>
+      <form onSubmit={isSignUpMode ? handleSignUp : handleLogin} style={styles.form}>
         <label style={styles.label}>Email</label>
         <input
           type="email"
@@ -168,6 +175,16 @@ function Login() {
           disabled={loading}
         />
 
+        <div style={styles.buttons}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={styles.primaryBtn}
+          >
+            {loading ? 'Please wait…' : isSignUpMode ? 'Register' : 'Sign In'}
+          </button>
+        </div>
+
         {message.text && (
           <p
             style={{
@@ -179,24 +196,16 @@ function Login() {
           </p>
         )}
 
-        <div style={styles.buttons}>
-          <button
-            type="submit"
-            onClick={handleLogin}
-            disabled={loading}
-            style={styles.primaryBtn}
-          >
-            {loading ? 'Please wait…' : 'Login'}
-          </button>
+        <p style={styles.toggleText}>
+          {isSignUpMode ? 'Already have an account? ' : "Don't have an account? "}
           <button
             type="button"
-            onClick={handleSignUp}
-            disabled={loading}
-            style={styles.secondaryBtn}
+            onClick={() => setIsSignUpMode((prev) => !prev)}
+            style={styles.toggleLink}
           >
-            Sign Up
+            {isSignUpMode ? 'Sign In' : 'Sign Up'}
           </button>
-        </div>
+        </p>
       </form>
     </div>
   );
@@ -269,6 +278,22 @@ const styles = {
     border: '1px solid #475569',
     borderRadius: '8px',
     cursor: 'pointer',
+  },
+  toggleText: {
+    marginTop: '1rem',
+    fontSize: '0.9rem',
+    color: '#94a3b8',
+  },
+  toggleLink: {
+    background: 'none',
+    border: 'none',
+    color: '#38bdf8',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    padding: 0,
+    marginLeft: '0.25rem',
+    textDecoration: 'underline',
   },
 };
 
