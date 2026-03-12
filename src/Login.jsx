@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
 } from 'firebase/auth';
-import { auth } from './firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './firebase';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState({ text: '', isError: false });
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [testText, setTestText] = useState('');
+  const [saveStatus, setSaveStatus] = useState({ text: '', isError: false });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        setMessage({ text: 'Signed in successfully.', isError: false });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -56,6 +71,74 @@ function Login() {
       setLoading(false);
     }
   };
+
+  const handleSaveTestText = async () => {
+    setSaveStatus({ text: '', isError: false });
+    if (!testText.trim()) {
+      setSaveStatus({ text: 'Please enter some text to save.', isError: true });
+      return;
+    }
+    try {
+      await addDoc(collection(db, 'test'), {
+        text: testText.trim(),
+        createdAt: serverTimestamp(),
+        uid: user ? user.uid : null,
+      });
+      setTestText('');
+      setSaveStatus({ text: 'Saved to Firestore test collection.', isError: false });
+    } catch (err) {
+      setSaveStatus({ text: err.message, isError: true });
+    }
+  };
+
+  if (user) {
+    return (
+      <div style={styles.card}>
+        <h1 style={styles.title}>FieldPorter</h1>
+        <p style={styles.subtitle}>You are signed in. Test Firestore below.</p>
+
+        {message.text && (
+          <p
+            style={{
+              ...styles.message,
+              color: message.isError ? '#f87171' : '#86efac',
+            }}
+          >
+            {message.text}
+          </p>
+        )}
+
+        <div style={styles.form}>
+          <label style={styles.label}>Test text to save to Firestore</label>
+          <input
+            type="text"
+            value={testText}
+            onChange={(e) => setTestText(e.target.value)}
+            placeholder="Type anything here..."
+            style={styles.input}
+          />
+          <button
+            type="button"
+            onClick={handleSaveTestText}
+            style={styles.primaryBtn}
+          >
+            Save
+          </button>
+
+          {saveStatus.text && (
+            <p
+              style={{
+                ...styles.message,
+                color: saveStatus.isError ? '#f87171' : '#86efac',
+              }}
+            >
+              {saveStatus.text}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.card}>
